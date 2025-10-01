@@ -7,7 +7,7 @@ This document provides a comprehensive overview of all the API endpoints availab
 All API endpoints are relative to:
 
 ```
-https://api.example.com/v1
+https://istrategy-api.mooo.com/v1
 ```
 
 For local development:

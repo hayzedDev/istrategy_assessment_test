@@ -44,13 +44,6 @@ if (config.cardNumber && config.cardNumber.length > 4) {
 
 ## API Security
 
-### Rate Limiting
-
-To prevent abuse, our API implements rate limiting:
-
-1. **Request Limits**: Maximum 100 requests per minute per IP address
-2. **Login Protection**: Maximum 5 login attempts per minute per IP address
-
 ### Input Validation
 
 1. **Request Body Validation**: All input is validated using NestJS pipes and class-validator
@@ -86,44 +79,7 @@ We use endpoint obfuscation as an additional security layer:
 2. **Reference-Based Routing**: Each webhook specifies the payment reference
 3. **Signature Verification**: All webhook calls require a valid signature
 
-## Database Security
-
-1. **Connection Encryption**: Database connections use TLS
-2. **Parameterized Queries**: All database queries use parameterized statements
-3. **Least Privilege**: Database users have minimal necessary permissions
-
-## Infrastructure Security
-
-1. **Container Isolation**: Services run in isolated containers
-2. **Network Segmentation**: Internal services are not directly exposed
-3. **Regular Updates**: All dependencies are regularly updated
-
 ## Audit & Monitoring
 
 1. **Comprehensive Logging**: All authentication and payment events are logged
 2. **Audit Trails**: Changes to sensitive data include audit records
-3. **Real-time Monitoring**: Suspicious activities trigger alerts
-
-## Incident Response
-
-We have a well-defined incident response plan:
-
-1. **Detection**: Automated systems detect security anomalies
-2. **Containment**: Procedures to quickly isolate affected systems
-3. **Recovery**: Steps to restore service securely
-4. **Post-mortem**: Analysis to prevent future incidents
-
-## Security Headers
-
-Our API implements security headers:
-
-1. **Content-Security-Policy**: Prevents XSS attacks
-2. **X-Content-Type-Options**: Prevents MIME type sniffing
-3. **X-XSS-Protection**: Additional XSS protection
-4. **Strict-Transport-Security**: Forces HTTPS connections
-
-## Security Testing
-
-1. **Automated Scanning**: Regular automated vulnerability scans
-2. **Penetration Testing**: Annual penetration tests by third parties
-3. **Code Reviews**: Security-focused code reviews for all changes

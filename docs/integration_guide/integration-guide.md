@@ -19,7 +19,7 @@ The first step is to authenticate and get your JWT token:
 ```javascript
 // Example using fetch API
 async function login() {
-  const response = await fetch('https://api.example.com/v1/auth/login', {
+  const response = await fetch('https://istrategy-api.mooo.com/v1/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ async function getPaymentMethods() {
   const token = localStorage.getItem('token');
 
   const response = await fetch(
-    'https://api.example.com/v1/payments/payment-methods',
+    'https://istrategy-api.mooo.com/v1/payments/payment-methods',
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -67,7 +67,7 @@ When a customer makes a purchase, initialize a payment:
 async function initializePayment(amount, paymentMethodId, metadata) {
   const token = localStorage.getItem('token');
 
-  const response = await fetch('https://api.example.com/v1/payments', {
+  const response = await fetch('https://istrategy-api.mooo.com/v1/payments', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ async function checkPaymentStatus(reference) {
   const token = localStorage.getItem('token');
 
   const response = await fetch(
-    `https://api.example.com/v1/payments/${reference}`,
+    `https://istrategy-api.mooo.com/v1/payments/${reference}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

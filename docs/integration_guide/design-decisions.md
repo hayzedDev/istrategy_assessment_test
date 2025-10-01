@@ -186,16 +186,13 @@ I standardized API responses:
 1. **JWT vs. Session Authentication**
    - Chose JWT for scalability, but added Redis blacklisting for revocation capability
 
-2. **PostgreSQL vs. MongoDB**
-   - Chose PostgreSQL for ACID compliance and strong relationships between entities
-
-3. **REST API vs. GraphQL**
+2. **REST API vs. GraphQL**
    - Chose REST for simplicity, wide adoption, and cacheability
 
-4. **Direct DB Access vs. Repository Pattern**
+3. **Direct DB Access vs. Repository Pattern**
    - Chose Repository pattern for abstraction and testability
 
-5. **Data Structure Normalization vs. Denormalization**
+4. **Data Structure Normalization vs. Denormalization**
    - Used normalization for core payment data, but allowed some denormalization in metadata
 
 ## Future Considerations
