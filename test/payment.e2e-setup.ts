@@ -18,20 +18,25 @@ export async function setupTestData(app: INestApplication) {
   const paymentMethodRepo = app.get<Repository<PaymentMethod>>(
     getRepositoryToken(PaymentMethod),
   );
-  const paymentRepo = app.get<Repository<Payment>>(
-    getRepositoryToken(Payment),
-  );
+  const paymentRepo = app.get<Repository<Payment>>(getRepositoryToken(Payment));
 
-  // Create test merchant
+  // Get test constants from the spec file
+  const TEST_MERCHANT_ID = 'bb095a12-cd42-4e8e-944d-be1fd229bfab';
+  const TEST_PAYMENT_METHOD_ID = 'a77c8823-9607-42b9-921d-b62bbb9e2182';
+  const TEST_PAYMENT_REFERENCE = 'TEST-REFERENCE';
+
+  // Create test merchant with predefined ID
   const merchant = await merchantRepo.save({
+    id: TEST_MERCHANT_ID,
     name: 'Test Merchant',
     email: 'test@example.com',
     password: 'password-hash',
     isActive: true,
   });
 
-  // Create test payment method
+  // Create test payment method with predefined ID
   const paymentMethod = await paymentMethodRepo.save({
+    id: TEST_PAYMENT_METHOD_ID,
     name: 'Test Credit Card',
     type: EPaymentMethodType.CREDIT_CARD,
     merchantId: merchant.id,
@@ -43,9 +48,9 @@ export async function setupTestData(app: INestApplication) {
     active: true,
   });
 
-  // Create a test payment
+  // Create a test payment with predefined reference
   const payment = await paymentRepo.save({
-    reference: 'TEST-REFERENCE',
+    reference: TEST_PAYMENT_REFERENCE,
     amount: 100.5,
     currency: 'USD',
     status: PaymentStatus.PENDING,
@@ -53,7 +58,7 @@ export async function setupTestData(app: INestApplication) {
     paymentMethod,
     metadata: {
       testData: true,
-    }
+    },
   });
 
   return {

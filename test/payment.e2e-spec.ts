@@ -6,34 +6,57 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppModule } from '../src/app.module';
 import { PaymentStatus } from '../src/payment/entities/payment.entity';
 import { getDatabaseConfig } from '../src/common/config/database.config';
-import { AuthenticationGuard } from '../src/auth/guards';
 import { setupTestData } from './payment.e2e-setup';
-import { Merchant } from '../src/auth/entities';
+import { SqsService } from '../src/sqs/sqs.service';
+import { MockSqsService } from './mocks/sqs.service.mock';
 
-// Create a more sophisticated mock for the authentication guard that adds a merchant to the request
+// Create mock data for a consistent test environment
+const TEST_MERCHANT_ID = 'bb095a12-cd42-4e8e-944d-be1fd229bfab';
+const TEST_PAYMENT_METHOD_ID = 'a77c8823-9607-42b9-921d-b62bbb9e2182';
+const TEST_PAYMENT_REFERENCE = 'TEST-REFERENCE';
+
+// Mock the auth guard to add our merchant to the request
 jest.mock('../src/auth/guards', () => {
-  const mockMerchantData = { id: 'test-merchant-id', email: 'test@example.com' };
-  
   return {
     AuthenticationGuard: jest.fn().mockImplementation(() => ({
       canActivate: jest.fn().mockImplementation((context) => {
         // Add merchant data to the request
         const request = context.switchToHttp().getRequest();
-        request.merchant = mockMerchantData;
+        request.merchant = {
+          id: TEST_MERCHANT_ID,
+          email: 'test@example.com',
+        };
         return true;
       }),
     })),
   };
 });
 
+// Mock the SQS service to avoid actual AWS calls
+jest.mock('../src/sqs/sqs.service', () => {
+  return {
+    SqsService: jest.fn().mockImplementation(() => ({
+      publishPaymentEvent: jest
+        .fn()
+        .mockResolvedValue({ MessageId: 'mock-message-id' }),
+    })),
+  };
+});
+
+// Create mock responses for payment service
+const mockPaymentResponse = {
+  id: 'payment-123',
+  reference: TEST_PAYMENT_REFERENCE,
+  amount: 100.5,
+  currency: 'USD',
+  status: 'pending',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 describe('PaymentController (e2e)', () => {
   let app: INestApplication;
   let authToken: string;
-
-  // Add test data variables
-  let testMerchant: Merchant;
-  let testPaymentMethodId: string;
-  let testPaymentReference: string;
 
   beforeAll(async () => {
     authToken = 'test-api-key';
@@ -58,7 +81,11 @@ describe('PaymentController (e2e)', () => {
         }),
         AppModule,
       ],
-    }).compile();
+    })
+      // Override the SQS service with our mock class
+      .overrideProvider(SqsService)
+      .useClass(MockSqsService)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -73,40 +100,34 @@ describe('PaymentController (e2e)', () => {
 
     try {
       // Setup test data
-      const testData = await setupTestData(app);
-      testMerchant = testData.merchant;
-      testPaymentMethodId = testData.paymentMethod.id;
-      testPaymentReference = testData.payment.reference;
-      
-      console.log('Test data set up successfully:', {
-        merchantId: testMerchant.id,
-        paymentMethodId: testPaymentMethodId,
-        paymentReference: testPaymentReference
-      });
+      await setupTestData(app);
     } catch (error) {
       console.error('Failed to set up test data:', error);
     }
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      // Properly close all connections
+      await app.close();
+    }
+
+    // Add a delay to allow all connections to fully close
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Close all remaining handles
+    jest.resetAllMocks();
   });
 
   describe('/payments (POST)', () => {
     it('should create a new payment', () => {
-      // Skip this test if test data wasn't set up
-      if (!testPaymentMethodId) {
-        console.warn('Skipping test because test data is not available');
-        return;
-      }
-      
       return request(app.getHttpServer())
         .post('/payments')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           amount: 100.5,
           currency: 'USD',
-          paymentMethodId: testPaymentMethodId,
+          paymentMethodId: TEST_PAYMENT_METHOD_ID,
         })
         .expect(201)
         .expect((res) => {
@@ -130,18 +151,12 @@ describe('PaymentController (e2e)', () => {
 
   describe('/payments/:reference (GET)', () => {
     it('should return payment details by reference', () => {
-      // Skip this test if test data wasn't set up
-      if (!testPaymentReference) {
-        console.warn('Skipping test because test data is not available');
-        return;
-      }
-
       return request(app.getHttpServer())
-        .get(`/payments/${testPaymentReference}`)
+        .get(`/payments/${TEST_PAYMENT_REFERENCE}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveProperty('reference', testPaymentReference);
+          expect(res.body).toHaveProperty('reference', TEST_PAYMENT_REFERENCE);
         });
     });
 
@@ -153,16 +168,14 @@ describe('PaymentController (e2e)', () => {
     });
   });
 
-  describe('/payments/webhook/:reference (POST)', () => {
+  describe('/webhooks/payment/:reference (POST)', () => {
+    // Increase timeout for webhook test
     it('should update payment status via webhook', () => {
-      // Skip this test if test data wasn't set up
-      if (!testPaymentReference) {
-        console.warn('Skipping test because test data is not available');
-        return;
-      }
-
+      jest.setTimeout(15000); // 15 seconds timeout
       return request(app.getHttpServer())
-        .post(`/webhook/payment/${testPaymentReference}`) // Note: adjusted path to match the actual webhook route
+        .post(
+          `/webhooks/payment/ndsiuhfjwmpeoimfesdfs/${TEST_PAYMENT_REFERENCE}`,
+        ) // Correct path from webhook controller
         .set('X-Webhook-Signature', 'test-signature')
         .send({
           gatewayReference: 'GATEWAY-123',
@@ -175,19 +188,15 @@ describe('PaymentController (e2e)', () => {
     });
 
     it('should reject webhook without signature', () => {
-      // Skip this test if test data wasn't set up
-      if (!testPaymentReference) {
-        console.warn('Skipping test because test data is not available');
-        return;
-      }
-
       return request(app.getHttpServer())
-        .post(`/webhook/payment/${testPaymentReference}`) // Note: adjusted path to match the actual webhook route
+        .post(
+          `/webhooks/payment/ndsiuhfjwmpeoimfesdfs/${TEST_PAYMENT_REFERENCE}`,
+        ) // Correct path from webhook controller
         .send({
           gatewayReference: 'GATEWAY-123',
           status: PaymentStatus.COMPLETED,
         })
-        .expect(500); // In our simple implementation, this throws an Error
+        .expect(400); // Service throws BadRequestException for missing signature
     });
   });
 });

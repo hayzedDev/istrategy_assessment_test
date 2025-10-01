@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { SeedsModule } from './seeds';
 import { WebhookModule } from './webhook/webhook.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -27,7 +29,7 @@ import { WebhookModule } from './webhook/webhook.module';
     WebhookModule,
     SeedsModule,
   ],
-  controllers: [],
-  providers: [SqsService, SqsConsumerService],
+  controllers: [AppController],
+  providers: [SqsService, SqsConsumerService, AppService],
 })
 export class AppModule {}

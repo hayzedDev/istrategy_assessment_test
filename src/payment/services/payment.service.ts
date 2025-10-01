@@ -119,8 +119,6 @@ export class PaymentService {
       throw new Error('Unauthorized: You can only access your own payments');
     }
 
-    console.log({ payment });
-
     return this.mapPaymentToResponse(payment);
   }
 
