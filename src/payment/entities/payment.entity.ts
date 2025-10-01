@@ -1,6 +1,5 @@
 import { Merchant } from '../../auth/entities';
 import { EPaymentStatus } from '../../common/enums';
-// Export EPaymentStatus as PaymentStatus for backward compatibility
 export { EPaymentStatus as PaymentStatus } from '../../common/enums';
 import {
   Entity,
