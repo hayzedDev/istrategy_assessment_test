@@ -6,14 +6,20 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppModule } from '../src/app.module';
 import { PaymentStatus } from '../src/payment/entities/payment.entity';
 import { getDatabaseConfig } from '../src/common/config/database.config';
+import { AuthenticationGuard } from '../src/auth/guards';
+
+// Mock the authentication guard
+jest.mock('../src/auth/guards', () => ({
+  AuthenticationGuard: jest.fn().mockImplementation(() => ({
+    canActivate: jest.fn().mockReturnValue(true),
+  })),
+}));
 
 describe('PaymentController (e2e)', () => {
   let app: INestApplication;
   let authToken: string;
 
   beforeAll(async () => {
-    // This is a placeholder for generating a test auth token
-    // In a real test, you would authenticate first
     authToken = 'test-api-key';
 
     const moduleFixture: TestingModule = await Test.createTestingModule({

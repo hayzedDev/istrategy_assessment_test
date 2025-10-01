@@ -28,12 +28,12 @@ import {
   UpdatePaymentStatusDto,
 } from '../dto';
 import { Payment } from '../entities';
-import { AuthenticationGuard } from 'src/auth/guards';
-import { RequestWithMerchant } from 'src/common/interfaces';
+import { AuthenticationGuard } from '../../auth/guards';
+import { RequestWithMerchant } from '../../common/interfaces';
 import {
   PaginatedResponse,
   PaymentMethodsListResponse,
-} from 'src/common/responses';
+} from '../../common/responses';
 
 @ApiTags('Payments')
 @ApiResponse({
