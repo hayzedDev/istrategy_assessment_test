@@ -1,0 +1,64 @@
+{
+  "merchants": [
+    {
+      "name": "Merchant One",
+      "email": "merchant1@example.com",
+      "password": "Password123!"
+    },
+    {
+      "name": "Merchant Two",
+      "email": "merchant2@example.com",
+      "password": "Password123!"
+    }
+  ],
+  "paymentMethods": [
+    {
+      "merchantEmail": "merchant1@example.com",
+      "name": "Visa Card",
+      "type": "credit_card",
+      "active": true,
+      "configuration": {
+        "provider": "STRIPE",
+        "cardNumber": "4242",
+        "expiryMonth": "12",
+        "expiryYear": "2030",
+        "cardholderName": "Merchant One"
+      }
+    },
+    {
+      "merchantEmail": "merchant1@example.com",
+      "name": "Bank Account",
+      "type": "bank_transfer",
+      "active": true,
+      "configuration": {
+        "provider": "PLAID",
+        "accountNumber": "7890",
+        "routingNumber": "6789",
+        "accountHolderName": "Merchant One"
+      }
+    },
+    {
+      "merchantEmail": "merchant2@example.com",
+      "name": "MasterCard",
+      "type": "credit_card",
+      "active": true,
+      "configuration": {
+        "provider": "STRIPE",
+        "cardNumber": "4444",
+        "expiryMonth": "10",
+        "expiryYear": "2028",
+        "cardholderName": "Merchant Two"
+      }
+    },
+    {
+      "merchantEmail": "merchant2@example.com",
+      "name": "Digital Wallet",
+      "type": "digital_wallet",
+      "active": true,
+      "configuration": {
+        "provider": "PAYPAL",
+        "email": "merchant2-paypal@example.com"
+      }
+    }
+  ]
+}
